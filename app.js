@@ -1,10 +1,10 @@
 const express = require('express')
 const app = express()
+const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const exphbs = require('express-handlebars')
+const Todo = require('./models/todo')
 
-app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
-app.set('view engine', 'hbs')
 //connect to mongodb
 mongoose.connect('mongodb://localhost/todo-list', { useNewUrlParser: true, useUnifiedTopology: true })
 
@@ -16,9 +16,28 @@ db.once('open', () => {
   console.log('mongodb connected!')
 })
 
+app.engine('hbs', exphbs({ defaultLayout: 'main', extname: '.hbs' }))
+app.set('view engine', 'hbs')
+app.use(bodyParser.urlencoded({ extended: true }))
+
 //setting route
 app.get('/', (req, res) => {
-  res.render('index')
+  Todo.find()
+    .lean()
+    .then(todos => res.render('index', { todos: todos }))
+    .catch(error => console.error(error))
+})
+
+//add the 'new' route
+app.get('/todos/new', (req, res) => {
+  return res.render('new')
+})
+
+app.post('/todos', (req, res) => {
+  const name = req.body.name
+  return Todo.create({ name: name })
+    .then(() => res.redirect('/'))
+    .catch(error => console.log(error))
 })
 
 //setting port
