@@ -5,6 +5,8 @@ const methodOverride = require('method-override')
 const mongoose = require('mongoose')
 const exphbs = require('express-handlebars')
 const Todo = require('./models/todo')
+const routes = require('./routes')
+
 
 //connect to mongodb
 mongoose.connect('mongodb://localhost/todo-list', { useNewUrlParser: true, useUnifiedTopology: true })
@@ -22,14 +24,7 @@ app.set('view engine', 'hbs')
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(methodOverride('_method'))
 
-//setting route
-app.get('/', (req, res) => {
-  Todo.find()
-    .lean()
-    .sort({ _id: 'asc' })
-    .then(todos => res.render('index', { todos: todos }))
-    .catch(error => console.error(error))
-})
+app.use(routes)
 
 //add the 'new' route
 app.get('/todos/new', (req, res) => {
